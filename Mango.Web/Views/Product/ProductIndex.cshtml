@@ -12,7 +12,7 @@
 			<div class="col-6">
 			</div>
 			<div class="col-6 text-end">
-				<a class="btn btn-outline-primary"><i class="bi bi-plus-square"></i> Create New Product</a>
+				<a asp-action="ProductCreate" class="btn btn-outline-primary"><i class="bi bi-plus-square"></i> Create New Product</a>
 
 			</div>
 		</div>
@@ -45,10 +45,10 @@
 							@((item.Price).ToString("c"))
 						</td>
 						<td>
-							<a class="btn btn-success" asp-action="ProductEdit" asp-route-productId ="@item.ProductId">
+							<a class="btn btn-success" asp-action="ProductEdit" asp-route-id ="@item.ProductId">
 								<i class="bi bi-pencil-square"></i>
 							</a>
-							<a class="btn btn-danger" asp-action="ProductDelete" asp-route-productId="@item.ProductId">
+							<a class="btn btn-danger" asp-action="ProductDelete" asp-route-ProductId="@item.ProductId">
 								<i class="bi bi-trash"></i>
 							</a>
 						</td>
