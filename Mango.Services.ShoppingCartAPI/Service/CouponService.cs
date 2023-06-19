@@ -7,7 +7,7 @@ namespace Mango.Services.ShoppingCartAPI.Service
     public class CouponService : ICouponService
     {
         private readonly IHttpClientFactory _clientFactory;
-        public COuponService(IHttpClientFactory httpClientFactory)
+        public CouponService(IHttpClientFactory httpClientFactory)
         {
             _clientFactory = httpClientFactory;
         }
@@ -18,7 +18,7 @@ namespace Mango.Services.ShoppingCartAPI.Service
             var response = await client.GetAsync($"/api/coupon/GetByCode/{couponCode}");
             var apiContent = await response.Content.ReadAsStringAsync();
             var resp = JsonConvert.DeserializeObject<ResponseDto>(apiContent);
-            if (resp.IsSuccess)
+            if (resp!= null && resp.IsSuccess)
             {
                 return JsonConvert.DeserializeObject<CouponDto>(Convert.ToString(resp.Result));
             }

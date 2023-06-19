@@ -52,7 +52,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                     if(coupon != null && cart.CartHeader.CartTotal > coupon.MinAmmount)
                     {
                         cart.CartHeader.CartTotal -= coupon.DiscountAmmount;
-                        cart.CartHeader.Discount = coupon.DiscountAmmount
+                        cart.CartHeader.Discount = coupon.DiscountAmmount;
                     }
                 }
 
