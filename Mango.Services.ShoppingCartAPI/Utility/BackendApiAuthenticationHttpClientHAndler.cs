@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using System.Net.Http.Headers;
-
+using Microsoft.AspNetCore.Http;
 namespace Mango.Services.ShoppingCartAPI.Utility
 {
     public class BackendApiAuthenticationHttpClientHAndler : DelegatingHandler
     { 
-        private readonly HttpContextAccessor _contextAccessor;
-        public BackendApiAuthenticationHttpClientHAndler(HttpContextAccessor httpContextAccessor)
+        private readonly IHttpContextAccessor _contextAccessor;
+        public BackendApiAuthenticationHttpClientHAndler(IHttpContextAccessor httpContextAccessor)
         {
             _contextAccessor = httpContextAccessor;
         }

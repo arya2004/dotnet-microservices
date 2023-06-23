@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace Mango.Services.CouponAPI.Controllers
 {
     [Route("api/coupon")]
@@ -93,6 +94,17 @@ namespace Mango.Services.CouponAPI.Controllers
                 Coupon Result = _mapper.Map<Coupon>(couponDto);//coupondto is return type
                 _appDbContext.Coupons.Add(Result);
                 _appDbContext.SaveChanges();
+                
+                var options = new Stripe.CouponCreateOptions
+                {
+                    AmountOff = (long)(couponDto.DiscountAmmount *100),
+                    Name = couponDto.CouponCode,
+                    Currency = "usd",
+                    Id = couponDto.CouponCode
+                    
+                };
+                var service = new Stripe.CouponService();
+                service.Create(options);
                 _resDto.Result = _mapper.Map<CouponDto>(Result);
             }
             catch (Exception ex)
@@ -132,6 +144,9 @@ namespace Mango.Services.CouponAPI.Controllers
 
                 Coupon fromdb = _appDbContext.Coupons.First(u => u.CouponId == id);
                 _appDbContext.Coupons.Remove(fromdb);
+                
+                var service = new Stripe.CouponService();
+                service.Delete(fromdb.CouponCode);
                 _appDbContext.SaveChanges();
             }
             catch (Exception ex)

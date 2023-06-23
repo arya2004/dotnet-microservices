@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Models;
 using Mango.Services.ShoppingCartAPI.Models.Dto;
@@ -20,13 +21,17 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private readonly AppDbContext _appDbContext;
         private readonly IProductService _productService;
         private readonly ICouponService _couponService;
-        public ShoppingCartAPIController(AppDbContext appDbContext, IMapper mapper, IProductService productService, ICouponService couponService)
+        private readonly IMessageBus _messageBus;
+        private readonly IConfiguration _configuration;
+        public ShoppingCartAPIController(AppDbContext appDbContext, IMapper mapper, IProductService productService, ICouponService couponService, IMessageBus messageBus, IConfiguration configuration)
         {
             _appDbContext = appDbContext;
             _mapper = mapper;
             this._responseDto = new ResponseDto();
             _productService = productService;
             _couponService = couponService;
+            _messageBus = messageBus;
+            _configuration = configuration;
         }
 
         [HttpGet("GetCart/{userId}")]
@@ -89,6 +94,25 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
             }
             return _responseDto;
         }
+
+        [HttpPost("EmailCartRequest")]
+        public async Task<ResponseDto> EmailCartRequest([FromBody] CartDto cartDto)
+        {
+            try
+            {
+                await _messageBus.PublishMessage(cartDto, _configuration.GetValue<string>("EmailCartRequest:EmailShoppingCart"));
+                _responseDto.Result = true;
+            }
+            catch (Exception ex)
+            {
+                _responseDto.IsSuccess = false;
+                _responseDto.Message = ex.Message;
+
+
+            }
+            return _responseDto;
+        }
+
         [HttpPost("RemoveCoupon")]
         public async Task<ResponseDto> RemoveCoupon([FromBody] CartDto cartDto)
         {
