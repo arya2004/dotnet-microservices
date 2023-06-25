@@ -63,7 +63,7 @@ namespace Mango.Services.ProductAPI.Controllers
 
         [HttpPost]
       //  [Authorize(Roles = "ADMIN")]
-        public ResponseDto Post([FromBody] ProductDto productDto)
+        public ResponseDto Post( ProductDto productDto)
         {
             try
             {
@@ -79,6 +79,29 @@ namespace Mango.Services.ProductAPI.Controllers
                 _appDbContext.Products.Add(result);
                 //_appDbContext.SaveChangesAsync();
                 _appDbContext.SaveChanges();
+
+                if(productDto.Image != null)
+                {
+                    string fileName = result.ProductId + Path.GetExtension(productDto.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages"+ fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+                    using(var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        productDto.Image.CopyTo(fileStream);
+                    }
+
+                    var baseurl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    result.ImageUrl =baseurl+ "/ProductImages/" + fileName;
+                    result.ImageLocalPath = filePath;
+                }
+                else
+                {
+                    result.ImageUrl = "https://placehold.co/600x400";
+                }
+                _appDbContext.Products.Update(result);
+                _appDbContext.SaveChanges();
+
+
                 _resDto.Result = _mapper.Map<ProductDto>(result);
             }
             catch (Exception ex)
@@ -90,16 +113,41 @@ namespace Mango.Services.ProductAPI.Controllers
         }
         [HttpPut]
        // [Authorize(Roles = "ADMIN")]
-        public ResponseDto Put([FromBody] ProductDto productDto)
+        public ResponseDto Put( ProductDto productDto)
         {
             try
             {
 
 
-                Product Result = _mapper.Map<Product>(productDto);//Productdto is return type
-                _appDbContext.Products.Update(Result);
+                Product result = _mapper.Map<Product>(productDto);//Productdto is return type
+
+                if (productDto.Image != null)
+                {
+                    if (!string.IsNullOrEmpty(result.ImageLocalPath))
+                    {
+                        var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), result.ImageLocalPath);
+                        FileInfo file = new FileInfo(oldFilePathDirectory);
+                        if (file.Exists)
+                        {
+                            file.Delete();
+                        }
+                    }
+
+                    string fileName = result.ProductId + Path.GetExtension(productDto.Image.FileName);
+                    string filePath = @"wwwroot\ProductImages" + fileName;
+                    var filePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+                    using (var fileStream = new FileStream(filePathDirectory, FileMode.Create))
+                    {
+                        productDto.Image.CopyTo(fileStream);
+                    }
+
+                    var baseurl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{HttpContext.Request.PathBase.Value}";
+                    result.ImageUrl = baseurl + "/ProductImages/" + fileName;
+                    result.ImageLocalPath = filePath;
+                }
+                _appDbContext.Products.Update(result);
                 _appDbContext.SaveChanges();
-                _resDto.Result = _mapper.Map<ProductDto>(Result);
+                _resDto.Result = _mapper.Map<ProductDto>(result);
             }
             catch (Exception ex)
             {
@@ -117,6 +165,16 @@ namespace Mango.Services.ProductAPI.Controllers
             {
 
                 Product fromdb = _appDbContext.Products.First(u => u.ProductId == id);
+                if(!string.IsNullOrEmpty(fromdb.ImageLocalPath))
+                {
+                    var oldFilePathDirectory = Path.Combine(Directory.GetCurrentDirectory(), fromdb.ImageLocalPath);
+                    FileInfo file = new FileInfo(oldFilePathDirectory);
+                    if(file.Exists)
+                    {
+                        file.Delete();
+                    }
+                }
+
                 _appDbContext.Products.Remove(fromdb);
                 _appDbContext.SaveChanges();
             }

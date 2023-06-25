@@ -1,4 +1,5 @@
 ﻿using Mango.Services.EmailAPI.Data;
+using Mango.Services.EmailAPI.Message;
 using Mango.Services.EmailAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging.Licenses;
@@ -14,6 +15,12 @@ namespace Mango.Services.EmailAPI.Services
         public EmailService(DbContextOptions<AppDbContext> options)
         {
             this._dbOptions = options;
+        }
+
+        public async Task LogOrderPLaced(RewardMessage rewardMessage)
+        {
+            string message = "New Order PLaced: " + rewardMessage.OrderId;
+            await LogANdEmail("admin@admin.com", message);
         }
 
         public async Task RegisterUSerEmailLog(string email)

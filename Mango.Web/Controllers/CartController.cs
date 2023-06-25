@@ -1,6 +1,7 @@
 ﻿using Mango.Web.Models;
 using Mango.Web.Models.Dto;
 using Mango.Web.Service.IService;
+using Mango.Web.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -47,7 +48,7 @@ namespace Mango.Web.Controllers
                 //get stripe session and redirect  to stripe
                 StripeRequestDto stripeRequestDto = new()
                 { 
-                    APprovedUrl = domain+ "cart/Conformatiion?orderId"+ orderHeaderDto.OrderHeaderId,
+                    APprovedUrl = domain+ "cart/Conformation?orderId=" + orderHeaderDto.OrderHeaderId,
                     CanceUrl = domain+ "cart/Checkout",
                     OrderHeader = orderHeaderDto,   
                 };
@@ -64,7 +65,20 @@ namespace Mango.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Conformation(int orderId)
         {
-            return View();
+            ResponseDto? respnse = await _orderService.ValidateStripeSession(orderId);
+            if (respnse != null && respnse.IsSuccess)
+            {
+                OrderHeaderDto orderHeaderDto = JsonConvert.DeserializeObject<OrderHeaderDto>(Convert.ToString(respnse.Result));
+                if(orderHeaderDto.Status == SD.Status_Approved)
+                {
+                    return View(orderId);
+                }
+                
+                
+                
+            }
+            //redrect based on status
+            return RedirectToAction(nameof(CartIndex));
         }
         public async Task<IActionResult> Remove(int cartDetailsId)
         {
